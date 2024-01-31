@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.unscramble.data.MAX_NO_OF_WORDS
 import com.example.unscramble.data.SCORE_INCREASE
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,19 +47,30 @@ class GameViewModel : ViewModel() {
         userGuess = guessWord
     }
 
-    private fun resetGame() {
+    fun resetGame() {
         usedWords.clear()
         _uiState.value = GameUiState(currentScrambledWord = pickRandomWordAndShuffle())
     }
 
     private fun updateGameState(updateScore: Int) {
-        _uiState.update { currentstate ->
-            currentstate.copy(
-                currentWordCount = currentstate.currentWordCount.inc(),
-                isGuessedWordWrong = false,
-                currentScrambledWord = pickRandomWordAndShuffle(),
-                score = updateScore
-            )
+        if (usedWords.size == MAX_NO_OF_WORDS) {
+            // LastRound in game
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isGuessedWordWrong = false,
+                    score = updateScore,
+                    isGameOver = true
+                )
+            }
+        } else {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    currentWordCount = currentState.currentWordCount.inc(),
+                    isGuessedWordWrong = false,
+                    currentScrambledWord = pickRandomWordAndShuffle(),
+                    score = updateScore
+                )
+            }
         }
     }
 
@@ -70,12 +82,14 @@ class GameViewModel : ViewModel() {
         if (userGuess.equals(currentWord, ignoreCase = true)) {
             val updateScore = _uiState.value.score.plus(SCORE_INCREASE)
             updateGameState(updateScore)
+            updateUserGuess("")
         } else {
             _uiState.update { currentState ->
                 currentState.copy(isGuessedWordWrong = true)
+
             }
         }
-        updateUserGuess(userGuess)
+
     }
 
     fun skipWord() {
