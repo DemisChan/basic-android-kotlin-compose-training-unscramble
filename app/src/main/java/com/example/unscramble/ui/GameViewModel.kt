@@ -19,6 +19,10 @@ class GameViewModel : ViewModel() {
     private lateinit var currentWord: String
     private var usedWords: MutableSet<String> = mutableSetOf()
 
+    init {
+        resetGame()
+    }
+
     var userGuess by mutableStateOf("")
         private set
 
@@ -72,10 +76,6 @@ class GameViewModel : ViewModel() {
                 )
             }
         }
-    }
-
-    init {
-        resetGame()
     }
 
     fun checkUserGuess() {
